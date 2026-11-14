@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PotholePatrol - Admin Dashboard</title>
+<style>
+:root {
+  --green: #176b4a;
+  --lime: #d8f36a;
+  --ink: #17251f;
+  --muted: #66736c;
+  --bg: #f5f7f1;
+  --line: #dfe6dc;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, sans-serif; }
+header {
+  background: white; padding: 17px 6%;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-size: 21px; font-weight: 900; }
+.brand span { color: var(--green); }
+a { color: var(--green); font-weight: bold; text-decoration: none; }
+.hero { background: #173f30; color: white; padding: 38px 6%; }
+.tag { color: var(--lime); font-size: 12px; font-weight: bold; letter-spacing: 2px; }
+h1 { font-size: clamp(30px, 5vw, 46px); margin: 12px 0; }
+main { max-width: 1100px; margin: 28px auto; padding: 0 16px 60px; }
+.login, .stat, .report { background: white; border: 1px solid var(--line); border-radius: 15px; }
+.login { max-width: 430px; margin: 35px auto; padding: 24px; }
+.muted { font-size: 13px; color: var(--muted); }
+label { display: block; font-size: 12px; font-weight: bold; margin: 13px 0 7px; }
+input, select {
+  width: 100%; padding: 11px; border: 1px solid var(--line);
+  border-radius: 9px; font: inherit; background: #fbfcf9;
+}
+button {
+  border: 0; border-radius: 9px; padding: 11px 14px;
+  background: var(--green); color: white; font-weight: bold; cursor: pointer;
+}
+button.full { width: 100%; margin-top: 15px; padding: 13px; }
+button.secondary { background: white; color: var(--green); border: 1px solid var(--green); }
+.hidden { display: none !important; }
+.error {
+  display: none; color: #9a3026; background: #fff0ed;
+  padding: 10px; border-radius: 8px; font-size: 12px; margin-top: 10px;
+}
+.warning {
+  font-size: 11px; line-height: 1.5; color: #80551c;
+  background: #fff7e9; padding: 11px; border-radius: 9px; margin-top: 14px;
+}
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; }
+.stat { padding: 16px; }
+.stat strong { font-size: 27px; display: block; }
+.stat span { font-size: 12px; color: var(--muted); }
+.toolbar {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; flex-wrap: wrap; margin: 20px 0 13px;
+}
+.toolbar h2 { margin: 0; }
+.toolbar .right { display: flex; gap: 10px; align-items: center; }
+.toolbar select { width: auto; }
+.reports { display: grid; gap: 14px; }
+.report { padding: 16px; }
+.report h3 { margin: 0 0 5px; font-size: 17px; }
+.meta { font-size: 12px; color: var(--muted); line-height: 1.7; }
+.chip {
+  display: inline-block; margin-top: 8px; padding: 5px 9px; border-radius: 20px;
+  background: #fff0db; color: #92520d; font-size: 10px; font-weight: bold;
+}
+.review { background: #e5efff; color: #315b91; }
+.assigned { background: #eee8ff; color: #6544a0; }
+.fixed { background: #e3f5e9; color: #237147; }
+.photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+.photo { border: 1px solid var(--line); border-radius: 10px; padding: 9px; min-width: 0; }
+.photo b { font-size: 11px; display: block; margin-bottom: 7px; }
+.photo img { width: 100%; height: 190px; object-fit: cover; border-radius: 7px; background: #edf1e9; }
+.no-photo {
+  height: 190px; display: grid; place-items: center; text-align: center;
+  color: var(--muted); font-size: 12px; background: #f3f6f0; border-radius: 7px;
+}
+.controls {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+  margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--line);
+}
+.empty {
+  padding: 32px; text-align: center; color: var(--muted);
+  border: 1px dashed var(--line); border-radius: 12px; line-height: 1.6;
+}
+@media(max-width:620px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .photos, .controls { grid-template-columns: 1fr; }
+  .photo img, .no-photo { height: 210px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🛣️ Pothole<span>Patrol</span></div>
+  <a href="index.html">Public Report Page ↗</a>
+</header>
+
+<section class="hero">
+  <div class="tag">PRIVATE COORDINATOR AREA</div>
+  <h1>Monitoring Dashboard</h1>
+  <p>Review incoming requests, update progress and add the after-repair photo.</p>
+</section>
+
+<main>
+
+<section class="login" id="login">
+  <h2>Coordinator Sign In</h2>
+  <p class="muted">Only the coordinator should edit requests and upload repair photos.</p>
+
+  <form id="loginForm">
+    <label for="password">Admin passcode</label>
+    <input id="password" type="password" placeholder="Enter admin passcode" required>
+    <button class="full" type="submit">Sign In</button>
+    <div class="error" id="error">Incorrect passcode. Try again.</div>
+  </form>
+
+  <div class="warning">
+    This is a demonstration login, not secure production authentication.
+  </div>
+</section>
+
+<section id="dashboard" class="hidden">
+
+  <div class="stats">
+    <div class="stat"><strong id="total">0</strong><span>Total Reports</span></div>
+    <div class="stat"><strong id="active">0</strong><span>Not Yet Repaired</span></div>
+    <div class="stat"><strong id="fixed">0</strong><span>Repaired</span></div>
+  </div>
+
+  <div class="toolbar">
+    <div>
+      <h2>All Requests</h2>
+      <div class="muted">Manage reports and track repair progress.</div>
+    </div>
+
+    <div class="right">
+      <button type="button" class="secondary" id="refreshBtn">↻ Refresh</button>
+      <select id="filter">
+        <option value="all">All Statuses</option>
+        <option>Reported</option>
+        <option>Under review</option>
+        <option>Team assigned</option>
+        <option>Repaired</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="reports" class="reports"></div>
+</section>
+</main>
+
+<script>
+let adminPass = "";
+let loggedIn = false;
+let lastRaw = null;
+let reports = [];
+
+const loginForm = document.getElementById("loginForm");
+const loginPanel = document.getElementById("login");
+const dashboard = document.getElementById("dashboard");
+const errorBox = document.getElementById("error");
+
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { "Content-Type": "application/json", "x-admin-pass": adminPass }
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || "Request failed");
+  return data;
+}
+
+loginForm.addEventListener("submit", async event => {
+  event.preventDefault();
+  const entered = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: entered })
+    });
+    if (res.status === 401) {
+      errorBox.textContent = "Incorrect passcode. Try again.";
+      errorBox.style.display = "block";
+      document.getElementById("password").select();
+      return;
+    }
+    if (!res.ok) throw new Error("bad");
+    adminPass = entered;
+    loggedIn = true;
+    loginPanel.classList.add("hidden");
+    dashboard.classList.remove("hidden");
+    load(true);
+  } catch (e) {
+    errorBox.textContent = "Cannot reach the server. Is it running? Open this page from http://localhost:3000/admin.html";
+    errorBox.style.display = "block";
+  }
+});
+
+document.getElementById("password").addEventListener("input", () => {
+  errorBox.style.display = "none";
+});
+document.getElementById("filter").addEventListener("change", draw);
+document.getElementById("refreshBtn").addEventListener("click", () => load(true));
+
+async function load(force) {
+  if (!loggedIn) return;
+  try {
+    const data = await api("/api/reports");
+    const raw = JSON.stringify(data);
+    if (!force && raw === lastRaw) return;
+    lastRaw = raw;
+    reports = data;
+    draw();
+  } catch (e) {
+    if (force) alert("Could not load reports: " + e.message);
+  }
+}
+
+async function changeStatus(id, status) {
+  try {
+    await api("/api/reports/" + id, { method: "PATCH", body: JSON.stringify({ status }) });
+    load(true);
+  } catch (e) { alert("Could not save: " + e.message); }
+}
+
+function addAfterPhoto(id, input) {
+  if (!loggedIn || !input.files || !input.files[0]) return;
+  const file = input.files[0];
+
+  if (!file.type.startsWith("image/")) { alert("Please choose an image file."); return; }
+  if (file.size > 10 * 1024 * 1024) { alert("Please choose a photo under 10 MB."); input.value = ""; return; }
+
+  const reader = new FileReader();
+  reader.onerror = () => alert("Could not read the photo.");
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = async () => {
+      const scale = Math.min(1, 1200 / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      const after = canvas.toDataURL("image/jpeg", 0.78);
+      try {
+        await api("/api/reports/" + id, { method: "PATCH", body: JSON.stringify({ after }) });
+        load(true);
+      } catch (e) { alert("Could not save: " + e.message); }
+    };
+    img.onerror = () => alert("Could not open this image.");
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function esc(value) {
+  return String(value || "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+
+function draw() {
+  if (!loggedIn) return;
+
+  const all = reports;
+  const filter = document.getElementById("filter").value;
+
+  document.getElementById("total").textContent = all.length;
+  document.getElementById("active").textContent = all.filter(r => r.status !== "Repaired").length;
+  document.getElementById("fixed").textContent = all.filter(r => r.status === "Repaired").length;
+
+  const items = all.filter(r => filter === "all" || r.status === filter);
+  const root = document.getElementById("reports");
+
+  if (!items.length) {
+    root.innerHTML = '<div class="empty">No reports found yet.<br>Reports submitted through the public page will appear here.</div>';
+    return;
+  }
+
+  root.innerHTML = items.map(r => `
+    <article class="report">
+      <h3>${esc(r.location)}</h3>
+
+      <div class="meta">
+        ${esc(r.area || "Area not specified")} ·
+        ${r.created ? new Date(r.created).toLocaleString() : ""}
+        <br>
+        Severity: <b>${esc(r.severity)}</b>
+        <br>
+        ${esc(r.details || "No extra details")}
+      </div>
+
+      <span class="chip ${
+        r.status === "Repaired" ? "fixed" :
+        r.status === "Team assigned" ? "assigned" :
+        r.status === "Under review" ? "review" : ""
+      }">${esc(r.status)}</span>
+
+      <div class="photos">
+        <div class="photo">
+          <b>BEFORE · Original Report</b>
+          <img src="${esc(r.before)}" alt="Before repair">
+        </div>
+
+        <div class="photo">
+          <b>AFTER · Repair Photo</b>
+          ${
+            r.after
+              ? `<img src="${esc(r.after)}" alt="After repair">`
+              : '<div class="no-photo">No after photo uploaded yet</div>'
+          }
+        </div>
+      </div>
+
+      <div class="controls">
+        <div>
+          <label for="status-${r.id}">Update Status</label>
+          <select id="status-${r.id}" onchange="changeStatus(${r.id}, this.value)">
+            <option ${r.status === "Reported" ? "selected" : ""}>Reported</option>
+            <option ${r.status === "Under review" ? "selected" : ""}>Under review</option>
+            <option ${r.status === "Team assigned" ? "selected" : ""}>Team assigned</option>
+            <option ${r.status === "Repaired" ? "selected" : ""}>Repaired</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="after-${r.id}">Upload After-Repair Photo</label>
+          <input id="after-${r.id}" type="file" accept="image/*"
+            onchange="addAfterPhoto(${r.id}, this)">
+        </div>
+      </div>
+    </article>
+  `).join("");
+}
+
+// Check for new reports every 5 seconds (only redraws if something changed)
+setInterval(() => load(false), 5000);
+</script>
+
+</body>
+</html>

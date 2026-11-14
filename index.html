@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PotholePatrol - Report a Pothole</title>
+<style>
+:root {
+  --green: #176b4a;
+  --lime: #d8f36a;
+  --ink: #17251f;
+  --muted: #66736c;
+  --bg: #f5f7f1;
+  --line: #dfe6dc;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, sans-serif; }
+header {
+  background: white; padding: 17px 6%;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--line);
+}
+.brand { font-size: 21px; font-weight: 900; }
+.brand span { color: var(--green); }
+a { color: var(--green); text-decoration: none; font-weight: bold; }
+.hero { background: var(--green); color: white; padding: 48px 6%; }
+.tag { color: var(--lime); font-size: 12px; font-weight: bold; letter-spacing: 2px; }
+h1 { font-size: clamp(36px, 6vw, 58px); margin: 14px 0; }
+.hero p { max-width: 550px; line-height: 1.6; }
+main { max-width: 780px; margin: 30px auto; padding: 0 16px 60px; }
+.card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
+.muted { color: var(--muted); font-size: 13px; }
+label { display: block; font-weight: bold; font-size: 13px; margin: 16px 0 7px; }
+input, textarea, select {
+  width: 100%; padding: 12px; border: 1px solid var(--line);
+  border-radius: 9px; font: inherit; background: #fbfcf9;
+}
+textarea { min-height: 90px; }
+.preview { display: none; max-width: 100%; max-height: 220px; margin-top: 10px; border-radius: 9px; }
+.hint { color: var(--muted); font-size: 11px; margin-top: 6px; }
+button {
+  width: 100%; padding: 14px; margin-top: 18px; border: 0; border-radius: 9px;
+  background: var(--green); color: white; font-weight: bold; cursor: pointer;
+}
+button:disabled { opacity: .6; cursor: not-allowed; }
+.message { display: none; padding: 13px; border-radius: 9px; margin-top: 14px; font-size: 13px; }
+.ok { background: #e6f5e9; color: #21643a; }
+.err { background: #fff0ed; color: #9a3026; }
+
+/* Thank-you panel */
+#thanks { display: none; text-align: center; padding: 40px 24px; }
+.check {
+  width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 50%;
+  background: var(--green); color: var(--lime);
+  font-size: 40px; line-height: 76px; font-weight: bold;
+}
+#thanks h2 { margin: 0 0 10px; font-size: 28px; }
+#thanks p { color: var(--muted); line-height: 1.6; max-width: 460px; margin: 8px auto; }
+.ref {
+  display: inline-block; margin-top: 14px; padding: 8px 16px;
+  background: var(--bg); border: 1px dashed var(--green);
+  border-radius: 9px; font-weight: bold; color: var(--green); letter-spacing: 1px;
+}
+footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🛣️ Pothole<span>Patrol</span></div>
+  <a href="admin.html">Coordinator Login ↗</a>
+</header>
+
+<section class="hero">
+  <div class="tag">COMMUNITY REPORTING PORTAL</div>
+  <h1>See a pothole?<br>Let us know.</h1>
+  <p>Send us a photo and location. The coordinator can review your report and track its repair.</p>
+</section>
+
+<main>
+  <!-- Form -->
+  <section class="card" id="formCard">
+    <h2>Submit a pothole report</h2>
+    <p class="muted">A clear photo and precise location help identify the problem.</p>
+
+    <form id="reportForm">
+      <label for="photo">Pothole photo *</label>
+      <input id="photo" type="file" accept="image/*" required>
+      <img id="preview" class="preview" alt="Photo preview">
+      <div class="hint">Choose an image up to 10 MB.</div>
+
+      <label for="location">Street address / exact location *</label>
+      <input id="location" required maxlength="180" placeholder="Road, street and nearby landmark">
+
+      <label for="area">Neighbourhood / area</label>
+      <input id="area" maxlength="100" placeholder="e.g. Raj Nagar, Ghaziabad">
+
+      <label for="severity">Severity</label>
+      <select id="severity">
+        <option>Small</option>
+        <option selected>Medium</option>
+        <option>Large / dangerous</option>
+      </select>
+
+      <label for="details">Additional details</label>
+      <textarea id="details" maxlength="800"
+        placeholder="Which lane? Is it near a school, crossing or bus stop?"></textarea>
+
+      <button id="submitBtn" type="submit">Submit Report →</button>
+      <div id="message" class="message" role="status"></div>
+    </form>
+  </section>
+
+  <!-- Thank-you -->
+  <section class="card" id="thanks" role="status" aria-live="polite">
+    <div class="check">✓</div>
+    <h2>Thank you for your report!</h2>
+    <p>Your pothole report has been submitted. The coordinator will review it and track its repair.</p>
+    <div class="ref" id="refNumber"></div>
+    <p class="muted" id="thanksNote"></p>
+    <button id="againBtn" type="button">Report another pothole</button>
+  </section>
+</main>
+
+<footer>PotholePatrol · Report it so it can be repaired.</footer>
+
+<script>
+const form = document.getElementById("reportForm");
+const formCard = document.getElementById("formCard");
+const thanks = document.getElementById("thanks");
+const photoInput = document.getElementById("photo");
+const preview = document.getElementById("preview");
+const message = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
+
+let photoData = "";
+let photoBusy = false;
+
+function showMessage(text, isError = false) {
+  message.textContent = text;
+  message.className = "message " + (isError ? "err" : "ok");
+  message.style.display = "block";
+}
+function hideMessage() { message.style.display = "none"; }
+
+function resizeImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith("image/")) return reject(new Error("Please choose an image."));
+    if (file.size > 10 * 1024 * 1024) return reject(new Error("Photo must be under 10 MB."));
+
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read photo."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 1200;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.78));
+      };
+      img.onerror = () => reject(new Error("Could not open image."));
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+photoInput.addEventListener("change", async () => {
+  photoData = "";
+  preview.style.display = "none";
+  hideMessage();
+  if (!photoInput.files[0]) return;
+
+  photoBusy = true;
+  submitBtn.disabled = true;
+  try {
+    photoData = await resizeImage(photoInput.files[0]);
+    preview.src = photoData;
+    preview.style.display = "block";
+    showMessage("Photo ready to submit.");
+  } catch (error) {
+    showMessage(error.message, true);
+    photoInput.value = "";
+  } finally {
+    photoBusy = false;
+    submitBtn.disabled = false;
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (photoBusy) { showMessage("Photo is still loading, please wait a moment.", true); return; }
+  if (!form.reportValidity()) return;
+  if (!photoData) { showMessage("Please select a photo first.", true); return; }
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+
+  try {
+    const res = await fetch("/api/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        before: photoData,
+        location: document.getElementById("location").value.trim(),
+        area: document.getElementById("area").value.trim(),
+        severity: document.getElementById("severity").value,
+        details: document.getElementById("details").value.trim()
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Server error");
+
+    document.getElementById("refNumber").textContent =
+      "Reference: PP-" + String(data.id).slice(-6);
+    document.getElementById("thanksNote").textContent = "";
+
+    formCard.style.display = "none";
+    thanks.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    form.reset();
+    photoData = "";
+    preview.removeAttribute("src");
+    preview.style.display = "none";
+    hideMessage();
+  } catch (error) {
+    showMessage("Could not submit: " + error.message +
+      ". Make sure the PotholePatrol server is running and open this page from its address, not by double-clicking the file.", true);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Submit Report →";
+});
+
+document.getElementById("againBtn").addEventListener("click", () => {
+  thanks.style.display = "none";
+  formCard.style.display = "block";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+</script>
+
+</body>
+</html>
