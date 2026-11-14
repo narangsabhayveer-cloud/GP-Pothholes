@@ -41,6 +41,9 @@ button {
 }
 button.full { width: 100%; margin-top: 15px; padding: 13px; }
 button.secondary { background: white; color: var(--green); border: 1px solid var(--green); }
+button.danger { background: #fff0ed; color: #9a3026; border: 1px solid #e8b8b1; }
+button.danger:hover { background: #9a3026; color: white; }
+.delete-row { margin-top: 14px; text-align: right; }
 .hidden { display: none !important; }
 .error {
   display: none; color: #9a3026; background: #fff0ed;
@@ -232,6 +235,16 @@ async function changeStatus(id, status) {
   } catch (e) { alert("Could not save: " + e.message); }
 }
 
+async function deleteReport(id) {
+  const r = reports.find(x => x.id === id);
+  const name = r ? r.location : "this request";
+  if (!confirm('Delete the report for "' + name + '"?\n\nThis cannot be undone.')) return;
+  try {
+    await api("/api/reports/" + id, { method: "DELETE" });
+    load(true);
+  } catch (e) { alert("Could not delete: " + e.message); }
+}
+
 function addAfterPhoto(id, input) {
   if (!loggedIn || !input.files || !input.files[0]) return;
   const file = input.files[0];
@@ -336,6 +349,10 @@ function draw() {
           <input id="after-${r.id}" type="file" accept="image/*"
             onchange="addAfterPhoto(${r.id}, this)">
         </div>
+      </div>
+
+      <div class="delete-row">
+        <button type="button" class="danger" onclick="deleteReport(${r.id})">🗑 Delete request</button>
       </div>
     </article>
   `).join("");

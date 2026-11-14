@@ -70,6 +70,10 @@ if (DATABASE_URL) {
       );
       return r.rowCount > 0;
     },
+    async remove(id) {
+      const r = await pool.query("DELETE FROM reports WHERE id=$1", [id]);
+      return r.rowCount > 0;
+    },
   };
 } else {
   const DATA_FILE = path.join(__dirname, "data", "reports.json");
@@ -92,6 +96,13 @@ if (DATABASE_URL) {
       if (fields.status !== undefined) r.status = fields.status;
       if (fields.after !== undefined) r.after = fields.after;
       save(all);
+      return true;
+    },
+    async remove(id) {
+      const all = load();
+      const left = all.filter((x) => x.id !== id);
+      if (left.length === all.length) return false;
+      save(left);
       return true;
     },
   };
@@ -184,6 +195,12 @@ const server = http.createServer(async (req, res) => {
         fields.after = b.after;
       }
       const ok = await store.update(Number(m[1]), fields);
+      return ok ? send(res, 200, { ok: true }) : send(res, 404, { error: "Report not found" });
+    }
+
+    if (req.method === "DELETE" && m) {
+      if (!isAdmin(req)) return send(res, 401, { error: "Not authorised" });
+      const ok = await store.remove(Number(m[1]));
       return ok ? send(res, 200, { ok: true }) : send(res, 404, { error: "Report not found" });
     }
 
