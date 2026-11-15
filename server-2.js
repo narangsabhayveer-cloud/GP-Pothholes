@@ -7,7 +7,7 @@ const path = require("path");
 const os = require("os");
 
 const PORT = process.env.PORT || 3000;
-const ADMIN_PASS = process.env.ADMIN_PASS || "123456";
+const ADMIN_PASS = process.env.ADMIN_PASS || "AHOLELOTCLEANER123";
 const DATABASE_URL = process.env.DATABASE_URL || "";
 
 /* ---------------- Storage ---------------- */
