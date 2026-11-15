@@ -3,85 +3,100 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PotholePatrol - Report a Pothole</title>
+<title>A Hole Lot Cleaner - Report a Pothole</title>
 <style>
 :root {
-  --green: #176b4a;
-  --lime: #d8f36a;
-  --ink: #17251f;
-  --muted: #66736c;
-  --bg: #f5f7f1;
-  --line: #dfe6dc;
+  --green: #2f6b45;
+  --green-dark: #24543a;
+  --green-soft: #e4f0e8;
+  --brown: #5c3d26;
+  --brown-soft: #f1e8dd;
+  --bg: #faf7f2;
+  --line: #ddd3c5;
+  --ink: #5c3d26;
+  --muted: #8a6f58;
 }
 * { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, sans-serif; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Arial, Helvetica, sans-serif; line-height: 1.5; }
+a { color: var(--brown); font-weight: bold; text-decoration: underline; text-decoration-color: var(--green); text-underline-offset: 4px; }
+a:hover { background: var(--green-soft); }
+
 header {
-  background: white; padding: 17px 6%;
+  background: white; padding: 16px 6%;
   display: flex; justify-content: space-between; align-items: center;
   border-bottom: 1px solid var(--line);
 }
-.brand { font-size: 21px; font-weight: 900; }
-.brand span { color: var(--green); }
-a { color: var(--green); text-decoration: none; font-weight: bold; }
-.hero { background: var(--green); color: white; padding: 48px 6%; }
-.tag { color: var(--lime); font-size: 12px; font-weight: bold; letter-spacing: 2px; }
-h1 { font-size: clamp(36px, 6vw, 58px); margin: 14px 0; }
-.hero p { max-width: 550px; line-height: 1.6; }
-main { max-width: 780px; margin: 30px auto; padding: 0 16px 60px; }
-.card { background: white; border: 1px solid var(--line); border-radius: 16px; padding: 24px; }
-.muted { color: var(--muted); font-size: 13px; }
-label { display: block; font-weight: bold; font-size: 13px; margin: 16px 0 7px; }
-input, textarea, select {
-  width: 100%; padding: 12px; border: 1px solid var(--line);
-  border-radius: 9px; font: inherit; background: #fbfcf9;
-}
-textarea { min-height: 90px; }
-.preview { display: none; max-width: 100%; max-height: 220px; margin-top: 10px; border-radius: 9px; }
-.hint { color: var(--muted); font-size: 11px; margin-top: 6px; }
-button {
-  width: 100%; padding: 14px; margin-top: 18px; border: 0; border-radius: 9px;
-  background: var(--green); color: white; font-weight: bold; cursor: pointer;
-}
-button:disabled { opacity: .6; cursor: not-allowed; }
-.message { display: none; padding: 13px; border-radius: 9px; margin-top: 14px; font-size: 13px; }
-.ok { background: #e6f5e9; color: #21643a; }
-.err { background: #fff0ed; color: #9a3026; }
+.brand { font-size: 20px; font-weight: bold; color: var(--brown); }
+.brand span { color: var(--brown); }
 
-/* Thank-you panel */
+.hero { background: var(--green); color: white; padding: 40px 6%; }
+.tag { font-size: 12px; letter-spacing: 1.5px; color: #cfe5d6; font-weight: bold; }
+h1 { font-size: clamp(30px, 5vw, 44px); margin: 10px 0; line-height: 1.15; }
+.hero p { max-width: 520px; margin: 0; color: #eaf4ee; }
+
+main { max-width: 780px; margin: 28px auto; padding: 0 16px 60px; }
+.card, .login, .stat, .report { background: white; border: 1px solid var(--line); border-radius: 10px; }
+.card { padding: 24px; }
+.card h2, .login h2 { margin: 0 0 6px; font-size: 22px; color: var(--brown); }
+.muted { color: var(--muted); font-size: 14px; }
+
+label { display: block; font-weight: bold; font-size: 14px; margin: 16px 0 6px; }
+input, textarea, select {
+  width: 100%; padding: 10px; border: 1px solid var(--line);
+  border-radius: 6px; font: inherit; background: white; color: var(--ink);
+}
+input:focus, textarea:focus, select:focus { outline: 2px solid var(--green-soft); border-color: var(--green); }
+textarea { min-height: 90px; }
+.preview { display: none; max-width: 100%; max-height: 220px; margin-top: 10px; border-radius: 6px; }
+.hint { color: var(--muted); font-size: 12px; margin-top: 6px; }
+
+button {
+  padding: 10px 16px; border: 1px solid var(--green); border-radius: 6px;
+  background: #cfe5d6; color: var(--brown); font: inherit; font-weight: bold; cursor: pointer;
+}
+button:hover { background: #bcdcc7; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+button.full, #submitBtn, #againBtn { width: 100%; margin-top: 18px; padding: 13px; }
+button.secondary { background: white; color: var(--brown); border: 1px solid var(--green); }
+button.secondary:hover { background: var(--green-soft); }
+button.danger { background: white; color: var(--brown); border: 1px solid #d9b3ad; }
+button.danger:hover { background: #fbece9; }
+
+.message { display: none; padding: 12px; border-radius: 6px; margin-top: 14px; font-size: 14px; }
+.ok { background: var(--green-soft); color: var(--brown); }
+.err { background: #fbece9; color: var(--brown); }
+
 #thanks { display: none; text-align: center; padding: 40px 24px; }
 .check {
-  width: 76px; height: 76px; margin: 0 auto 18px; border-radius: 50%;
-  background: var(--green); color: var(--lime);
-  font-size: 40px; line-height: 76px; font-weight: bold;
+  width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 50%;
+  background: var(--green-soft); border: 2px solid var(--green); color: var(--brown); font-size: 32px; line-height: 60px; font-weight: bold;
 }
-#thanks h2 { margin: 0 0 10px; font-size: 28px; }
-#thanks p { color: var(--muted); line-height: 1.6; max-width: 460px; margin: 8px auto; }
+#thanks h2 { font-size: 26px; margin: 0 0 8px; }
+#thanks p { color: var(--muted); max-width: 440px; margin: 8px auto; }
 .ref {
-  display: inline-block; margin-top: 14px; padding: 8px 16px;
-  background: var(--bg); border: 1px dashed var(--green);
-  border-radius: 9px; font-weight: bold; color: var(--green); letter-spacing: 1px;
+  display: inline-block; margin-top: 12px; padding: 7px 14px;
+  background: var(--brown-soft); border-radius: 6px; font-weight: bold; color: var(--brown);
 }
-footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; }
+footer { text-align: center; padding: 20px; color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="brand">🛣️ Pothole<span>Patrol</span></div>
-  <a href="admin.html">Coordinator Login ↗</a>
+  <div class="brand">A Hole Lot <span>Cleaner</span></div>
+  <a href="admin.html">Admin login</a>
 </header>
 
 <section class="hero">
-  <div class="tag">COMMUNITY REPORTING PORTAL</div>
-  <h1>See a pothole?<br>Let us know.</h1>
-  <p>Send us a photo and location. The coordinator can review your report and track its repair.</p>
+  <div class="tag">REPORT A POTHOLE</div>
+  <h1>See a pothole? Let us know.</h1>
+  <p>Send us a photo and the location. We'll keep track of it until it's fixed.</p>
 </section>
 
 <main>
-  <!-- Form -->
   <section class="card" id="formCard">
     <h2>Submit a pothole report</h2>
-    <p class="muted">A clear photo and precise location help identify the problem.</p>
+    <p class="muted">A clear photo and exact location help us find the problem.</p>
 
     <form id="reportForm">
       <label for="photo">Pothole photo *</label>
@@ -90,10 +105,14 @@ footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px
       <div class="hint">Choose an image up to 10 MB.</div>
 
       <label for="location">Street address / exact location *</label>
-      <input id="location" required maxlength="180" placeholder="Road, street and nearby landmark">
+      <input id="location" required maxlength="180">
 
       <label for="area">Neighbourhood / area</label>
-      <input id="area" maxlength="100" placeholder="e.g. Raj Nagar, Ghaziabad">
+      <input id="area" maxlength="100">
+
+      <label for="phone">Phone number *</label>
+      <input id="phone" type="tel" inputmode="tel" maxlength="20" autocomplete="tel" required>
+      <div class="hint">So we can contact you if we need more details.</div>
 
       <label for="severity">Severity</label>
       <select id="severity">
@@ -103,26 +122,24 @@ footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px
       </select>
 
       <label for="details">Additional details</label>
-      <textarea id="details" maxlength="800"
-        placeholder="Which lane? Is it near a school, crossing or bus stop?"></textarea>
+      <textarea id="details" maxlength="800"></textarea>
 
-      <button id="submitBtn" type="submit">Submit Report →</button>
+      <button id="submitBtn" type="submit">Submit report</button>
       <div id="message" class="message" role="status"></div>
     </form>
   </section>
 
-  <!-- Thank-you -->
   <section class="card" id="thanks" role="status" aria-live="polite">
-    <div class="check">✓</div>
-    <h2>Thank you for your report!</h2>
-    <p>Your pothole report has been submitted. The coordinator will review it and track its repair.</p>
+    <div class="check">&#10003;</div>
+    <h2>Thank you!</h2>
+    <p>Your report has been sent. We'll review it and keep track of the repair.</p>
     <div class="ref" id="refNumber"></div>
     <p class="muted" id="thanksNote"></p>
     <button id="againBtn" type="button">Report another pothole</button>
   </section>
 </main>
 
-<footer>PotholePatrol · Report it so it can be repaired.</footer>
+<footer>A Hole Lot Cleaner &middot; A student project</footer>
 
 <script>
 const form = document.getElementById("reportForm");
@@ -197,6 +214,12 @@ form.addEventListener("submit", async (event) => {
   if (!form.reportValidity()) return;
   if (!photoData) { showMessage("Please select a photo first.", true); return; }
 
+  const phone = document.getElementById("phone").value.trim();
+  if (!/^[0-9 +()-]{7,20}$/.test(phone)) {
+    showMessage("Please enter a valid phone number.", true);
+    return;
+  }
+
   submitBtn.disabled = true;
   submitBtn.textContent = "Submitting...";
 
@@ -208,6 +231,7 @@ form.addEventListener("submit", async (event) => {
         before: photoData,
         location: document.getElementById("location").value.trim(),
         area: document.getElementById("area").value.trim(),
+        phone: phone,
         severity: document.getElementById("severity").value,
         details: document.getElementById("details").value.trim()
       })
@@ -230,11 +254,11 @@ form.addEventListener("submit", async (event) => {
     hideMessage();
   } catch (error) {
     showMessage("Could not submit: " + error.message +
-      ". Make sure the PotholePatrol server is running and open this page from its address, not by double-clicking the file.", true);
+      ". Make sure the server is running and open this page from its address, not by double-clicking the file.", true);
   }
 
   submitBtn.disabled = false;
-  submitBtn.textContent = "Submit Report →";
+  submitBtn.textContent = "Submit report";
 });
 
 document.getElementById("againBtn").addEventListener("click", () => {
