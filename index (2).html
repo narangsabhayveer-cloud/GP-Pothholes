@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A Hole Lot Cleaner - Report a Pothole</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">A Hole Lot Cleaner</div>
+  <a href="admin.html">Admin login</a>
+</header>
+
+<section class="hero">
+  <h1>See a pothole? Let us know.</h1>
+  <p>Send us a photo and the location. We'll keep track of it until it's fixed.</p>
+</section>
+
+<main>
+
+  <!-- The form -->
+  <section class="card" id="formCard">
+    <h2>Submit a pothole report</h2>
+
+    <form id="form">
+      <label for="photo">Pothole photo *</label>
+      <input id="photo" type="file" accept="image/*" required>
+      <img id="preview" class="preview" alt="Photo preview" hidden>
+
+      <label for="location">Street address / exact location *</label>
+      <input id="location" maxlength="180" required>
+
+      <label for="area">Neighbourhood / area</label>
+      <input id="area" maxlength="100">
+
+      <label for="phone">Phone number *</label>
+      <input id="phone" type="tel" maxlength="20" pattern="[0-9 +()\-]{7,20}"
+             title="Numbers, spaces, + ( ) and - only (7 to 20 characters)" required>
+
+      <label for="severity">Severity</label>
+      <select id="severity">
+        <option>Small</option>
+        <option selected>Medium</option>
+        <option>Large / dangerous</option>
+      </select>
+
+      <label for="details">Additional details</label>
+      <textarea id="details" maxlength="800"></textarea>
+
+      <button class="full" id="submitBtn" type="submit">Submit report</button>
+      <div id="message" class="message" hidden></div>
+    </form>
+  </section>
+
+  <!-- Shown after a successful submit -->
+  <section class="card center" id="thanks" hidden>
+    <h2>Thank you!</h2>
+    <p>Your report has been sent. We'll review it and keep track of the repair.</p>
+    <p><b id="refNumber"></b></p>
+    <button class="full" id="againBtn" type="button">Report another pothole</button>
+  </section>
+
+</main>
+
+<footer>A Hole Lot Cleaner &middot; A student project</footer>
+
+<script src="common.js"></script>
+<script>
+const form = document.getElementById("form");
+const photoInput = document.getElementById("photo");
+const preview = document.getElementById("preview");
+const message = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
+
+let photoData = ""; // the resized photo, ready to send
+
+function showMessage(text, isError) {
+  message.textContent = text;
+  message.className = "message " + (isError ? "error" : "ok");
+  message.hidden = false;
+}
+
+// When a photo is chosen: shrink it and show a preview
+photoInput.addEventListener("change", async () => {
+  photoData = "";
+  preview.hidden = true;
+  message.hidden = true;
+  if (!photoInput.files[0]) return;
+
+  try {
+    photoData = await resizePhoto(photoInput.files[0]);
+    preview.src = photoData;
+    preview.hidden = false;
+  } catch (error) {
+    showMessage(error.message, true);
+    photoInput.value = "";
+  }
+});
+
+// When the form is submitted: send everything to the server
+form.addEventListener("submit", async (event) => {
+  event.preventDefault(); // stop the page from reloading
+
+  if (!photoData) return showMessage("Please choose a photo first.", true);
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = "Submitting...";
+
+  try {
+    const response = await fetch("/api/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        before: photoData,
+        location: document.getElementById("location").value,
+        area: document.getElementById("area").value,
+        phone: document.getElementById("phone").value,
+        severity: document.getElementById("severity").value,
+        details: document.getElementById("details").value,
+      }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error);
+
+    // Success: swap the form for the thank-you box
+    document.getElementById("refNumber").textContent = "Reference: PP-" + String(data.id).slice(-6);
+    document.getElementById("formCard").hidden = true;
+    document.getElementById("thanks").hidden = false;
+    form.reset();
+    photoData = "";
+    preview.hidden = true;
+    message.hidden = true;
+  } catch (error) {
+    showMessage("Could not submit: " + error.message, true);
+  }
+
+  submitBtn.disabled = false;
+  submitBtn.textContent = "Submit report";
+});
+
+// "Report another pothole" button
+document.getElementById("againBtn").addEventListener("click", () => {
+  document.getElementById("thanks").hidden = true;
+  document.getElementById("formCard").hidden = false;
+});
+</script>
+
+</body>
+</html>
