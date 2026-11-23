@@ -7,6 +7,7 @@
 const http = require("http");
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_PASS = process.env.ADMIN_PASS || "AHOLELOTCLEANER123";
@@ -14,12 +15,13 @@ const DATABASE_URL = process.env.DATABASE_URL; // set this on Render to use Post
 
 const STATUSES = ["Reported", "Under review", "Team assigned", "Repaired"];
 const SEVERITIES = ["Small", "Medium", "Large / dangerous"];
+const dailyVisitors = new Set();
 
 /* ------------------------------------------------------------------
    STORAGE
    Both versions offer the same 4 functions: getAll, add, update, remove
-   - On your laptop: reports are saved in data/reports.json
-   - On Render:      reports are saved in Postgres (when DATABASE_URL is set)
+- On your laptop: reports are saved in data/reports.json
+- On Render:      reports are saved in Postgres (when DATABASE_URL is set)
 ------------------------------------------------------------------- */
 let db;
 
@@ -164,6 +166,20 @@ const FILE_TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".
 ------------------------------------------------------------------- */
 const server = http.createServer(async (req, res) => {
   const url = req.url.split("?")[0];
+
+  const isPageView = req.method === "GET" && (url === "/" || url === "/index.html");
+  if (isPageView) {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || "";
+    const day = new Date().toISOString().slice(0, 10);
+    const visitorId = crypto
+      .createHash("sha256")
+      .update(ip + day)
+      .digest("hex")
+      .slice(0, 12);
+
+    dailyVisitors.add(visitorId);
+    console.log(`[VISIT] date=${day} path=${url} unique_today=${dailyVisitors.size}`);
+  }
 
   try {
     // 1. Web pages
